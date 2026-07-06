@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>IkanKu - Beli Ikan</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+  h1 { text-align: center; }
+  .card { border: 1px solid #333; padding: 15px; margin: 10px auto; max-width: 400px; background: #fff; border-radius: 8px; }
+  button { padding: 6px 18px; cursor: pointer; background: #2563eb; color: #fff; border: none; border-radius: 4px; }
+  button:hover { background: #1d4ed8; }
+  input { padding: 4px; }
+</style>
+</head>
+<body>
+  <h1>🐟 IkanKu - Daftar Ikan</h1>
+  <div id="daftar-ikan">Memuat data...</div>
+
+  <script>
+    const API_URL = 'https://ikanku-backend.valdinataalfauzan.workers.dev';
+
+    fetch(API_URL + '/api/ikan')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('daftar-ikan');
+        container.innerHTML = '';
+        data.forEach(ikan => {
+          container.innerHTML += `
+            <div class="card">
+              <h3>${ikan.nama_ikan}</h3>
+              <p>Jenis: ${ikan.jenis}</p>
+              <p>Harga: Rp${ikan.harga}</p>
+              <p>Stok: ${ikan.stok}</p>
+              <input type="number" id="jumlah-${ikan.id}" min="1" max="${ikan.stok}" value="1" style="width:60px;">
+              <button onclick="beli(${ikan.id})">Beli</button>
+            </div>
+          `;
+        });
+      })
+      .catch(err => {
+        document.getElementById('daftar-ikan').innerText = 'Gagal memuat data: ' + err;
+      });
+
+    function beli(id) {
+      const jumlah = document.getElementById('jumlah-' + id).value;
+      const nama = prompt("Masukkan nama kamu:");
+      if (!nama) return;
+
+      fetch(API_URL + '/api/pesanan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nama_customer: nama, ikan_id: id, jumlah: parseInt(jumlah) })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        location.reload();
+      });
+    }
+  </script>
+</body>
+</html>
